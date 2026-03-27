@@ -56,7 +56,7 @@ URL base do endpoint de download de dados do BI do CNJ.
 
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{# install.packages("devtools")
-devtools::install_github("thiagofmiranda/datajud-r")
+devtools::install_github("thiagofmiranda/datajudr")
 }\if{html}{\out{</div>}}
 }
 

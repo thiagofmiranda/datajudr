@@ -43,7 +43,7 @@
 #'
 #' ```r
 #' # install.packages("devtools")
-#' devtools::install_github("thiagofmiranda/datajud-r")
+#' devtools::install_github("thiagofmiranda/datajudr")
 #' ```
 #'
 #' @section Uso basico:

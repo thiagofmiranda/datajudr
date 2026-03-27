@@ -24,7 +24,7 @@ oferece busca eficiente em grandes volumes de dados via paginação `search_afte
 
 ```{r}
 # install.packages("devtools")
-devtools::install_github("thiagofmiranda/datajud-r")
+devtools::install_github("thiagofmiranda/datajudr")
 ```
 
 ## Configuração
