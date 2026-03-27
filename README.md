@@ -4,7 +4,6 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/thiagofmiranda/datajudr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thiagofmiranda/datajudr/actions/workflows/R-CMD-check.yaml)
-[![CRAN status](https://www.r-pkg.org/badges/version/datajudr)](https://CRAN.R-project.org/package=datajudr)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <!-- badges: end -->
 
