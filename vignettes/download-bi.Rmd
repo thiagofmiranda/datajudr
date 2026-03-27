@@ -1,0 +1,130 @@
+---
+title: "Download de Dados do BI do CNJ"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Download de Dados do BI do CNJ}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  eval     = FALSE
+)
+```
+
+O CNJ disponibiliza dados agregados de todos os tribunais através do seu portal
+de Business Intelligence (BI). A função `download_bi()` acessa esses dados
+diretamente, retornando uma lista nomeada de dataframes — um por indicador.
+
+## O que são os indicadores do BI?
+
+Cada download do BI contém até 6 arquivos com significados distintos:
+
+| Indicador | Descrição |
+|-----------|-----------|
+| `_CPL` | **Casos Pendentes Líquidos** — processos ativos aguardando julgamento |
+| `_CPL_15anos` | Subconjunto do CPL com processos pendentes há mais de 15 anos |
+| `_Sent` | **Sentenças** — processos que receberam sentença no período |
+| `_TBaix` | **Taxa de Baixas** — processos baixados (arquivados, extintos, remetidos) |
+| `_CN` | **Casos Novos** — processos que entraram no período de referência |
+| `_tbl_correg` | **Tabela da Corregedoria** — indicadores agregados por órgão julgador |
+
+Cada indicador tem seu próprio schema de colunas e representa um evento
+específico no ciclo de vida do processo. Por isso são retornados separadamente.
+
+## Instalação
+
+```{r}
+# install.packages("devtools")
+devtools::install_github("thiagofmiranda/datajud-r")
+```
+
+## Download completo do tribunal
+
+```{r}
+library(datajudr)
+
+dados <- download_bi(tribunal = "TJAP")
+
+# Ver os indicadores disponíveis
+names(dados)
+#> [1] "TJAP_CPL"       "TJAP_CPL_15anos" "TJAP_Sent"
+#> [4] "TJAP_TBaix"     "TJAP_tbl_correg" "TJAP_CN"
+
+# Acessar cada indicador pelo nome
+dplyr::glimpse(dados$TJAP_CPL)
+dplyr::glimpse(dados$TJAP_Sent)
+dplyr::glimpse(dados$TJAP_tbl_correg)
+```
+
+## Salvando em Parquet
+
+Para salvar os dados localmente, informe `output_dir` e `referencia`.
+O parâmetro `referencia` é obrigatório ao salvar — use o período de
+atualização do dado disponibilizado pelo CNJ no formato `"YYYY/MM"`.
+
+```{r}
+dados <- download_bi(
+  tribunal   = "TJAP",
+  referencia = "2026/01",
+  output_dir = "dados_bi",
+  verbose    = TRUE
+)
+```
+
+Os arquivos serão salvos em `dados_bi/2026/01/`:
+
+```
+dados_bi/
+  2026/01/
+    tjap_cpl.parquet
+    tjap_cpl_15anos.parquet
+    tjap_sent.parquet
+    tjap_tbaix.parquet
+    tjap_tbl_correg.parquet
+    tjap_cn.parquet
+```
+
+Para ler depois:
+
+```{r}
+library(arrow)
+
+cpl <- arrow::read_parquet("dados_bi/2026/01/tjap_cpl.parquet")
+```
+
+## Filtros avançados
+
+Ao usar filtros (`oj`, `grau`, `municipio`), o parâmetro `indicador` é
+obrigatório — a API exige que se especifique qual indicador filtrar.
+
+```{r}
+# Filtrar por grau, órgão julgador e município
+dados_filtrado <- download_bi(
+  tribunal  = "TJAP",
+  indicador = "ind3",
+  oj        = "43909",
+  grau      = "G1",
+  municipio = "183",
+  verbose   = TRUE
+)
+```
+
+### Erros de validação
+
+```{r}
+# Sem indicador com filtro -> erro explicativo
+download_bi(tribunal = "TJAP", grau = "G1")
+#> Error: O parâmetro `indicador` é obrigatório ao usar filtros (oj, grau, municipio).
+
+# Sem referencia ao salvar -> erro explicativo
+download_bi(tribunal = "TJAP", output_dir = "dados_bi")
+#> Error: O parâmetro `referencia` é obrigatório ao salvar os dados.
+
+# Formato de referência inválido -> erro explicativo
+download_bi(tribunal = "TJAP", referencia = "janeiro-2026", output_dir = "dados_bi")
+#> Error: O parâmetro `referencia` deve estar no formato "YYYY/MM" (ex: "2026/01").
+```

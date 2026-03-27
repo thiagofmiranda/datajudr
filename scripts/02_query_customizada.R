@@ -1,26 +1,14 @@
 library(dplyr)
-
-source("R/config.R")
-source("R/request.R")
-source("R/pagination.R")
-source("R/parsing.R")
-source("R/query_builders.R")
-source("R/search.R")
-source("R/endpoints_processos.R")
-source("R/download.R")
-
+devtools::load_all()
 
 # Configurando endpoint a ser usando
-cfg <- datajud_config(
-  api_key = Sys.getenv("DATAJUD_API_KEY"),
-  tribunal = "tjpa"
-)
+cfg <- datajud_config(tribunal = "TJPA")
 
-# ------------------------------------------------ - 
+# ------------------------------------------------ -
 # ---- Query simples                           -----
 # ------------------------------------------------ -
 body <- build_query(
-  query_match("classe.nome", "Execução Fiscal")
+  query_match("classe.nome", "Execucao Fiscal")
 )
 
 df <- datajud_search(
@@ -33,7 +21,7 @@ df <- datajud_search(
 dplyr::glimpse(df)
 
 
-# ------------------------------------------------ - 
+# ------------------------------------------------ -
 # ---- Query por intervalo de data             -----
 # ------------------------------------------------ -
 body <- build_query(
@@ -54,24 +42,22 @@ df <- datajud_search(
 dplyr::glimpse(df)
 
 
-# ------------------------------------------------ - 
+# ------------------------------------------------ -
 # ---- Query combinada                         -----
 # ------------------------------------------------ -
 body <- build_query(
-  
   query_bool(
     filter = list(
-      query_match("classe.nome", "Execução Fiscal"),
+      query_match("classe.nome", "Execucao Fiscal"),
       query_range(
         "dataAjuizamento",
         gte = "2022-01-01"
       )
     )
   )
-  
 )
 
-df1 <- datajud_search(
+df <- datajud_search(
   cfg,
   body,
   page_size = 5,
@@ -79,5 +65,3 @@ df1 <- datajud_search(
 )
 
 dplyr::glimpse(df)
-
-

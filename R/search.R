@@ -1,13 +1,16 @@
 #' Search DataJud and return a tibble of results
 #'
-#' High-level wrapper around [datajud_search_after()] that handles sorting,
-#' prints a download estimate, and parses results into a flat tibble.
+#' High-level search function that handles sorting, prints a download estimate,
+#' and parses results into a flat tibble.
 #'
 #' @param cfg List. Configuration object from [datajud_config()].
 #' @param body List. Elasticsearch query body from [build_query()].
 #' @param page_size Integer. Results per page. Default `100`.
 #' @param max_pages Numeric. Maximum pages to fetch. Default `Inf`.
-#' @param verbose Logical. Print progress and estimate.
+#' @param verbose Logical. Print page progress messages.
+#' @param estimate Logical. Whether to make an extra COUNT request before
+#'   fetching to print a download estimate. Only used when `verbose = TRUE`.
+#'   Default `TRUE`.
 #'
 #' @return A tibble with one row per process.
 #' @export
@@ -15,7 +18,8 @@ datajud_search <- function(cfg,
                            body,
                            page_size = 100,
                            max_pages = Inf,
-                           verbose   = TRUE) {
+                           verbose   = TRUE,
+                           estimate  = TRUE) {
 
   if (is.null(body$query)) {
     stop("body precisa conter 'query'. Use build_query().")
@@ -25,13 +29,13 @@ datajud_search <- function(cfg,
     body$sort <- default_sort()
   }
 
-  if (verbose) {
-    estimate <- datajud_estimate_download(
+  if (verbose && estimate) {
+    est <- datajud_estimate_download(
       cfg       = cfg,
       body      = body,
       page_size = page_size
     )
-    print(estimate)
+    print(est)
   }
 
   results <- datajud_search_after(
@@ -69,26 +73,20 @@ datajud_count <- function(cfg, body) {
 #' @param cfg List. Configuration object from [datajud_config()].
 #' @param body List. Elasticsearch query body from [build_query()].
 #' @param page_size Integer. Results per page. Default `100`.
-#' @param rate_limit Integer. Requests per minute. Default `120`.
 #'
 #' @return An object of class `datajud_estimate`.
 #' @export
 datajud_estimate_download <- function(cfg,
                                       body,
-                                      page_size  = 100,
-                                      rate_limit = 120) {
+                                      page_size  = 100) {
 
   total <- datajud_count(cfg, body)
   pages <- ceiling(total / page_size)
 
-  estimated_seconds <- pages / (rate_limit / 60)
-
   result <- list(
-    total_results        = total,
-    page_size            = page_size,
-    total_pages          = pages,
-    rate_limit_per_minute = rate_limit,
-    estimated_seconds    = estimated_seconds
+    total_results = total,
+    page_size     = page_size,
+    total_pages   = pages
   )
 
   class(result) <- "datajud_estimate"
@@ -109,6 +107,5 @@ print.datajud_estimate <- function(x, ...) {
   cat("Resultados totais: ", format(x$total_results, big.mark = ","), "\n")
   cat("Page size:         ", x$page_size, "\n")
   cat("Total de paginas:  ", format(x$total_pages, big.mark = ","), "\n")
-  cat("Rate limit:        ", x$rate_limit_per_minute, "req/min\n")
 
 }

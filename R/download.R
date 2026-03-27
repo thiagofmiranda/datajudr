@@ -9,6 +9,9 @@
 #' @param page_size Integer. Results per page. Default `100`.
 #' @param batch_pages Integer. Pages per Parquet file. Default `50`.
 #' @param verbose Logical. Print progress messages.
+#' @param estimate Logical. Whether to make an extra COUNT request before
+#'   downloading to print a download estimate. Only used when `verbose = TRUE`.
+#'   Default `TRUE`.
 #'
 #' @return Invisibly returns `output_dir`.
 #' @export
@@ -17,12 +20,22 @@ download_processos <- function(cfg,
                                output_dir,
                                page_size   = 100,
                                batch_pages = 50,
-                               verbose     = TRUE) {
+                               verbose     = TRUE,
+                               estimate    = TRUE) {
 
   dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
   if (is.null(body$sort)) {
     body$sort <- default_sort()
+  }
+
+  if (verbose && estimate) {
+    est <- datajud_estimate_download(
+      cfg       = cfg,
+      body      = body,
+      page_size = page_size
+    )
+    print(est)
   }
 
   body$size    <- page_size
@@ -66,8 +79,6 @@ download_processos <- function(cfg,
 
       batch      <- list()
       file_index <- file_index + 1
-
-      gc()
 
     }
 

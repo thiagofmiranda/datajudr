@@ -1,16 +1,7 @@
-#' Paginate through DataJud results using search_after
-#'
-#' Implements Elasticsearch's `search_after` cursor-based pagination to
-#' retrieve all results beyond the 10,000 document limit.
-#'
-#' @param cfg List. Configuration object from [datajud_config()].
-#' @param body List. Elasticsearch query body. Must include a `sort` clause.
-#' @param page_size Integer. Number of results per page. Default `100`.
-#' @param max_pages Numeric. Maximum number of pages to fetch. Default `Inf`.
-#' @param verbose Logical. Print page progress messages.
-#'
-#' @return A list of raw page results (list of hits per page).
-#' @export
+# A ordenacao por @timestamp e exigida pela API do DataJud para uso do
+# search_after. Conforme documentacao oficial, este campo garante paginacao
+# eficiente em grandes volumes sem recarregar resultados a cada pagina.
+#' @keywords internal
 datajud_search_after <- function(cfg,
                                  body,
                                  page_size = 100,
@@ -44,7 +35,12 @@ datajud_search_after <- function(cfg,
 
     results[[page]] <- hits
 
-    last_hit     <- hits[[length(hits)]]
+    last_hit <- hits[[length(hits)]]
+
+    if (is.null(last_hit$sort)) {
+      stop("Campo 'sort' nao retornado pela API. Verifique se o body possui clausula 'sort'.")
+    }
+
     search_after <- last_hit$sort
     page         <- page + 1
 

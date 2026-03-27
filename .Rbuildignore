@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^scripts$
+^dados_bi$
+^\.Renviron$
+^\.github$
+^LICENSE\.md$
+^teste_download$
+^doc$
+^Meta$

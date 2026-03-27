@@ -43,6 +43,13 @@ download_bi <- function(tribunal,
     )
   }
 
+  # Validar formato de referencia
+  if (!is.null(referencia) && !grepl("^\\d{4}/\\d{2}$", referencia)) {
+    stop(
+      "O parametro `referencia` deve estar no formato \"YYYY/MM\" (ex: \"2026/01\")."
+    )
+  }
+
   # Filtros exigem indicador obrigatorio
   usando_filtro <- nchar(oj) > 0 || nchar(grau) > 0 || nchar(municipio) > 0
   if (usando_filtro && nchar(indicador) == 0) {
@@ -60,7 +67,16 @@ download_bi <- function(tribunal,
       grau      = grau,
       municipio = municipio,
       ambiente  = ambiente
-    )
+    ) |>
+    httr2::req_error(body = function(resp) {
+      status <- httr2::resp_status(resp)
+      switch(as.character(status),
+        "404" = "Endpoint nao encontrado. Verifique o codigo do tribunal ou indicador.",
+        "429" = "Rate limit excedido. Aguarde antes de tentar novamente.",
+        "500" = "Erro interno do servidor DataJud. Tente novamente mais tarde.",
+        paste0("Erro da API DataJud BI (HTTP ", status, ").")
+      )
+    })
 
   if (verbose) {
     message("Baixando dados BI: ", tribunal, " [", ambiente, "]")
@@ -79,6 +95,11 @@ download_bi <- function(tribunal,
 
     tmp_zip <- tempfile(fileext = ".zip")
     tmp_dir <- tempfile()
+
+    on.exit({
+      unlink(tmp_zip)
+      unlink(tmp_dir, recursive = TRUE)
+    }, add = TRUE)
 
     writeBin(raw_bytes, tmp_zip)
     utils::unzip(tmp_zip, exdir = tmp_dir)
@@ -106,9 +127,6 @@ download_bi <- function(tribunal,
 
     names(result) <- nomes
 
-    unlink(tmp_zip)
-    unlink(tmp_dir, recursive = TRUE)
-
   # ---- CSV simples ----
   } else {
 
@@ -119,7 +137,7 @@ download_bi <- function(tribunal,
     }
 
     df <- readr::read_csv2(
-      I(rawToChar(raw_bytes)),
+      raw_bytes,
       show_col_types = FALSE,
       locale = readr::locale(
         decimal_mark  = ",",

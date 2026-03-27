@@ -27,6 +27,10 @@ query_term <- function(field, value) {
 #' @export
 query_range <- function(field, gte = NULL, lte = NULL) {
 
+  if (is.null(gte) && is.null(lte)) {
+    stop("query_range requer ao menos um dos parametros: `gte` ou `lte`.")
+  }
+
   range_list <- list()
   if (!is.null(gte)) range_list$gte <- gte
   if (!is.null(lte)) range_list$lte <- lte
@@ -55,6 +59,10 @@ query_bool <- function(must     = NULL,
                        filter   = NULL,
                        should   = NULL,
                        must_not = NULL) {
+
+  if (is.null(must) && is.null(filter) && is.null(should) && is.null(must_not)) {
+    stop("query_bool requer ao menos um dos parametros: `must`, `filter`, `should` ou `must_not`.")
+  }
 
   bool <- list()
   if (!is.null(must))     bool$must     <- must

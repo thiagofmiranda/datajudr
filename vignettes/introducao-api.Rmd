@@ -1,0 +1,197 @@
+---
+title: "Introdução à API do DataJud"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introdução à API do DataJud}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  eval     = FALSE
+)
+```
+
+O `datajudr` permite consultar processos judiciais brasileiros diretamente da
+API pública do [DataJud](https://datajud-wiki.cnj.jus.br/api-publica), mantida
+pelo CNJ (Conselho Nacional de Justiça). A API é baseada em Elasticsearch e
+oferece busca eficiente em grandes volumes de dados via paginação `search_after`.
+
+## Instalação
+
+```{r}
+# install.packages("devtools")
+devtools::install_github("thiagofmiranda/datajud-r")
+```
+
+## Configuração
+
+O primeiro passo é criar um objeto de configuração com o tribunal desejado.
+O pacote já vem com a chave pública do CNJ como valor padrão — nenhuma
+configuração adicional é necessária.
+
+```{r}
+library(datajudr)
+
+cfg <- datajud_config(tribunal = "TJAP")
+```
+
+Caso a chave ou as URLs da API sejam atualizadas pelo CNJ, defina as variáveis
+de ambiente no seu `.Renviron` (abra com `usethis::edit_r_environ()`):
+
+```
+DATAJUD_API_KEY=<nova_chave>
+DATAJUD_BASE_URL=https://api-publica.datajud.cnj.jus.br
+```
+
+## Buscas prontas
+
+O pacote oferece funções de alto nível para os casos de uso mais comuns.
+
+### Todos os processos
+
+```{r}
+df <- processos(cfg, page_size = 100, max_pages = 1)
+dplyr::glimpse(df)
+```
+
+### Por número do processo
+
+```{r}
+df <- processo_por_numero(cfg, "00365766720198030001")
+print(df)
+```
+
+### Por classe processual
+
+```{r}
+df <- processos_por_classe(cfg, "Execução Fiscal", page_size = 100, max_pages = 2)
+dplyr::glimpse(df)
+```
+
+### Por data de ajuizamento
+
+```{r}
+df <- processos_por_data(
+  cfg,
+  data_inicio = "2023-01-01",
+  data_fim    = "2023-12-31",
+  page_size   = 100,
+  max_pages   = 2
+)
+dplyr::glimpse(df)
+```
+
+### Combinando filtros
+
+```{r}
+df <- processos_busca(
+  cfg,
+  classe      = "Execução Fiscal",
+  data_inicio = "2023-01-01",
+  data_fim    = "2023-12-31",
+  page_size   = 100,
+  max_pages   = 2
+)
+dplyr::glimpse(df)
+```
+
+## Queries customizadas
+
+Para buscas mais específicas, use os construtores de query no estilo
+Elasticsearch DSL.
+
+### Match (busca textual)
+
+```{r}
+body <- build_query(
+  query_match("classe.nome", "Execução Fiscal")
+)
+
+df <- datajud_search(cfg, body, page_size = 100, max_pages = 1)
+```
+
+### Term (correspondência exata)
+
+```{r}
+body <- build_query(
+  query_term("numeroProcesso", "00365766720198030001")
+)
+
+df <- datajud_search(cfg, body)
+```
+
+### Range (intervalo)
+
+```{r}
+body <- build_query(
+  query_range("dataAjuizamento", gte = "2024-01-01", lte = "2024-12-31")
+)
+
+df <- datajud_search(cfg, body, page_size = 100, max_pages = 1)
+```
+
+### Bool (combinando cláusulas)
+
+```{r}
+body <- build_query(
+  query_bool(
+    filter = list(
+      query_match("classe.nome", "Execução Fiscal"),
+      query_range("dataAjuizamento", gte = "2023-01-01")
+    )
+  )
+)
+
+df <- datajud_search(cfg, body, page_size = 100, max_pages = 1)
+```
+
+## Estimativa de download
+
+Antes de um download grande, consulte o volume de dados:
+
+```{r}
+body <- build_query(query_match_all())
+
+est <- datajud_estimate_download(cfg, body, page_size = 100)
+print(est)
+#> Estimativa de download DataJud
+#> -------------------------------
+#> Resultados totais:  125.432
+#> Page size:          100
+#> Total de páginas:   1.255
+```
+
+## Download em Parquet
+
+Para grandes volumes, use `download_processos()` que salva os dados em lotes
+de arquivos Parquet, evitando estouro de memória.
+
+```{r}
+body <- build_query(
+  query_match("classe.nome", "Execução Fiscal")
+)
+
+download_processos(
+  cfg,
+  body,
+  output_dir  = "dados_execucao_fiscal",
+  page_size   = 100,
+  batch_pages = 50,   # salva um .parquet a cada 50 páginas
+  verbose     = TRUE,
+  estimate    = TRUE
+)
+```
+
+Os arquivos são salvos como `processos_1.parquet`, `processos_2.parquet`, etc.
+Para ler depois:
+
+```{r}
+library(arrow)
+
+df <- arrow::open_dataset("dados_execucao_fiscal") |>
+  dplyr::collect()
+```

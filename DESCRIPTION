@@ -2,7 +2,7 @@ Package: datajudr
 Type: Package
 Title: R Client for the DataJud API (CNJ)
 Version: 0.1.0
-Authors@R: person("Thiago", "Miranda", role = c("aut", "cre"))
+Authors@R: person("Thiago", "Miranda", email = "thiagofm.pa@gmail.com", role = c("aut", "cre"))
 Description: Provides functions to query and download judicial process data
     from the DataJud platform (CNJ - Conselho Nacional de Justica) via its
     public Elasticsearch API and BI download endpoints.
@@ -10,6 +10,10 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Suggests:
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
 Imports:
     arrow,
     dplyr,

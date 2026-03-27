@@ -35,9 +35,9 @@ devtools::check()
 
 
 # -------------------------------------------------------------
-# 4. Instalar o pacote localmente
+# 4. Instalar o pacote localmente (com vignettes compiladas)
 # -------------------------------------------------------------
-devtools::install()
+devtools::install(build_vignettes = TRUE)
 
 
 # -------------------------------------------------------------
@@ -46,7 +46,7 @@ devtools::install()
 library(datajudr)
 
 # -- config --
-cfg <- datajud_config(tribunal = "tjap")
+cfg <- datajud_config(tribunal = "TJAP")
 print(cfg)
 
 # -- contagem --

@@ -1,22 +1,10 @@
 library(dplyr)
-
-source("R/config.R")
-source("R/request.R")
-source("R/pagination.R")
-source("R/parsing.R")
-source("R/query_builders.R")
-source("R/search.R")
-source("R/endpoints_processos.R")
-source("R/download.R")
-
+devtools::load_all()
 
 # Configurando endpoint a ser usando
-cfg <- datajud_config(
-  api_key = Sys.getenv("DATAJUD_API_KEY"),
-  tribunal = "tjpa"
-)
+cfg <- datajud_config(tribunal = "TJPA")
 
-# ------------------------------------------------ - 
+# ------------------------------------------------ -
 # ---- Teste 0: busca geral                    -----
 # ------------------------------------------------ -
 
@@ -24,13 +12,14 @@ df_processos <- processos(
   cfg,
   page_size = 5,
   max_pages = 5,
-  verbose = TRUE)
+  verbose = TRUE
+)
 
 print(df_processos)
 
-# ------------------------------------------------ - 
-# ---- Teste 1: buscar processo por número     -----
-# ------------------------------------------------ - 
+# ------------------------------------------------ -
+# ---- Teste 1: buscar processo por numero     -----
+# ------------------------------------------------ -
 
 df_processo <- processo_por_numero(
   cfg,
@@ -42,13 +31,13 @@ df_processo <- processo_por_numero(
 print(df_processo)
 
 
-# ------------------------------------------------ - 
+# ------------------------------------------------ -
 # ---- Teste 2: processos por classe           -----
-# ------------------------------------------------ - 
+# ------------------------------------------------ -
 
 df_classe <- processos_por_classe(
   cfg,
-  classe = "Execução Fiscal",
+  classe = "Execucao Fiscal",
   page_size = 5,
   max_pages = 5
 )
@@ -56,22 +45,16 @@ df_classe <- processos_por_classe(
 dplyr::glimpse(df_classe)
 
 
-# ------------------------------------------------ - 
+# ------------------------------------------------ -
 # ---- Teste 3: processos por data             -----
-# ------------------------------------------------ - 
+# ------------------------------------------------ -
 
 df_data <- processos_por_data(
   cfg,
   data_inicio = "2023-01-01",
-  data_fim = "2023-12-31",
-  page_size = 5,
-  max_pages = 5
+  data_fim    = "2023-12-31",
+  page_size   = 5,
+  max_pages   = 5
 )
 
 dplyr::glimpse(df_data)
-
-
-
-
-
-

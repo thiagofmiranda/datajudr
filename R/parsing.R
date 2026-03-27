@@ -1,43 +1,27 @@
-#' Extract source fields from raw DataJud results
-#'
-#' Converts the raw list of paginated hits into a flat tibble with one row
-#' per process, keeping only the `_source` fields.
-#'
-#' @param results List. Raw results from [datajud_search_after()].
-#'
-#' @return A tibble.
-#' @export
+#' @keywords internal
 extract_source <- function(results) {
 
   if (length(results) == 0) {
     return(tibble::tibble())
   }
 
-  purrr::map_dfr(results, function(page) {
-    purrr::map_dfr(page, function(hit) {
+  purrr::map(results, function(page) {
+    purrr::map(page, function(hit) {
       source_to_row(hit$`_source`)
-    })
-  })
+    }) |> dplyr::bind_rows()
+  }) |> dplyr::bind_rows()
 
 }
 
-#' Extract full hit information from raw DataJud results
-#'
-#' Like [extract_source()], but also includes Elasticsearch metadata:
-#' document `id`, `index`, and `sort` cursor values.
-#'
-#' @param results List. Raw results from [datajud_search_after()].
-#'
-#' @return A tibble with `id`, `index`, `sort`, and all source fields.
-#' @export
+#' @keywords internal
 extract_hits <- function(results) {
 
   if (length(results) == 0) {
     return(tibble::tibble())
   }
 
-  purrr::map_dfr(results, function(page) {
-    purrr::map_dfr(page, function(hit) {
+  purrr::map(results, function(page) {
+    purrr::map(page, function(hit) {
 
       source <- source_to_row(hit$`_source`)
 
@@ -48,8 +32,8 @@ extract_hits <- function(results) {
       ) |>
         dplyr::bind_cols(source)
 
-    })
-  })
+    }) |> dplyr::bind_rows()
+  }) |> dplyr::bind_rows()
 
 }
 

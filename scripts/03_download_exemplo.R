@@ -1,25 +1,13 @@
 library(dplyr)
-
-source("R/config.R")
-source("R/request.R")
-source("R/pagination.R")
-source("R/parsing.R")
-source("R/query_builders.R")
-source("R/search.R")
-source("R/endpoints_processos.R")
-source("R/download.R")
-
+devtools::load_all()
 
 # Configurando endpoint a ser usando
-cfg <- datajud_config(
-  api_key = Sys.getenv("DATAJUD_API_KEY"),
-  tribunal = "tjap"
-)
+cfg <- datajud_config(tribunal = "TJAP")
 
 
 ## Construir query
 body <- build_query(
-  query_match("classe.nome", "Execução Fiscal")
+  query_match("classe.nome", "Execucao Fiscal")
 )
 
 
@@ -33,24 +21,16 @@ estimate <- datajud_estimate_download(
 print(estimate)
 
 
-## Definir diretório de saída
+## Definir diretorio de saida
 output_dir <- "dados_tjap_execucao_fiscal"
-
 
 
 ## Executar download
 download_processos(
   cfg,
   body,
-  output_dir = output_dir,
-  page_size = 50,
+  output_dir  = output_dir,
+  page_size   = 50,
   batch_pages = 3,
-  verbose = TRUE
+  verbose     = TRUE
 )
-
-
-
-
-
-
-

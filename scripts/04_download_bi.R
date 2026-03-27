@@ -1,6 +1,5 @@
 library(dplyr)
-
-source("R/download_bi.R")
+devtools::load_all()
 
 
 # ------------------------------------------------ -
