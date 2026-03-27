@@ -8,6 +8,13 @@
 
 
 # -------------------------------------------------------------
+# 0. Limpar ambiente global
+#    Evita conflitos com objetos carregados via source() anteriormente
+# -------------------------------------------------------------
+rm(list = ls())
+
+
+# -------------------------------------------------------------
 # 1. Gerar documentacao (man/) e atualizar NAMESPACE via roxygen2
 # -------------------------------------------------------------
 devtools::document()
