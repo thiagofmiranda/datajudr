@@ -1,7 +1,7 @@
 library(httr2)
 library(readr)
 
-.BI_BASE_URL <- "https://api-csvr.cloud.cnj.jus.br/download_csv"
+.BI_BASE_URL <- Sys.getenv("DATAJUD_BI_BASE_URL", "https://api-csvr.cloud.cnj.jus.br/download_csv")
 
 download_bi <- function(tribunal,
                         indicador = "",
