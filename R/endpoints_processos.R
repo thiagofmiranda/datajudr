@@ -5,6 +5,9 @@
 #' @param ... Additional arguments passed to [datajud_search()].
 #'
 #' @return A tibble with matching processes.
+#' @note Usa campos da API publica (`numeroProcesso`). Nao se aplica ao indice
+#'   bruto do Elastic (`view-processos-sigilo-*`), que usa `dadosBasicos.numero`;
+#'   nesse caso use [build_query()] com [query_term()].
 #' @export
 processo_por_numero <- function(cfg, numero_processo, ...) {
 
@@ -23,6 +26,9 @@ processo_por_numero <- function(cfg, numero_processo, ...) {
 #' @param ... Additional arguments passed to [datajud_search()].
 #'
 #' @return A tibble with matching processes.
+#' @note Usa campos da API publica (`classe.nome`, texto). O indice bruto do
+#'   Elastic so tem o codigo da classe (`dadosBasicos.classeProcessual`); nesse
+#'   caso use [build_query()] com [query_term()] pelo codigo.
 #' @export
 processos_por_classe <- function(cfg, classe, ...) {
 
@@ -42,6 +48,9 @@ processos_por_classe <- function(cfg, classe, ...) {
 #' @param ... Additional arguments passed to [datajud_search()].
 #'
 #' @return A tibble with matching processes.
+#' @note Usa campos da API publica (`dataAjuizamento`). No indice bruto do
+#'   Elastic a data fica em `dadosBasicos.dpj_dataAjuizamento`; nesse caso use
+#'   [build_query()] com [query_range()].
 #' @export
 processos_por_data <- function(cfg,
                                data_inicio,
@@ -65,6 +74,9 @@ processos_por_data <- function(cfg,
 #' @param ... Additional arguments passed to [datajud_search()].
 #'
 #' @return A tibble with matching processes.
+#' @note Filtros de classe/data usam campos da API publica. No indice bruto do
+#'   Elastic use [build_query()] com os campos `dadosBasicos.*`. (Sem filtros,
+#'   cai em `match_all` e funciona em qualquer indice.)
 #' @export
 processos_busca <- function(cfg,
                             classe      = NULL,

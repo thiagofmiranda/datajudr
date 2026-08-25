@@ -21,3 +21,8 @@ A tibble with matching processes.
 \description{
 Search processes by filing date range
 }
+\note{
+Usa campos da API publica (\code{dataAjuizamento}). No indice bruto do
+Elastic a data fica em \code{dadosBasicos.dpj_dataAjuizamento}; nesse caso use
+\code{\link[=build_query]{build_query()}} com \code{\link[=query_range]{query_range()}}.
+}

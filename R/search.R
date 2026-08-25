@@ -26,7 +26,7 @@ datajud_search <- function(cfg,
   }
 
   if (is.null(body$sort)) {
-    body$sort <- default_sort()
+    body$sort <- default_sort(cfg)
   }
 
   if (verbose && estimate) {

@@ -5,25 +5,73 @@
 \title{Create a DataJud API configuration object}
 \usage{
 datajud_config(
+  fonte = c("publica", "elastic"),
+  indice = c("processos", "datamart"),
+  tribunal = "TJAP",
   api_key = Sys.getenv("DATAJUD_API_KEY",
     "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw=="),
-  tribunal = "TJAP",
-  base_url = Sys.getenv("DATAJUD_BASE_URL", "https://api-publica.datajud.cnj.jus.br")
+  usuario = Sys.getenv("DATAJUD_USER"),
+  senha = Sys.getenv("DATAJUD_PWD"),
+  base_url = NULL,
+  index = NULL,
+  rate_limit = 120
 )
 }
 \arguments{
-\item{api_key}{Character. DataJud API key. Defaults to the
-\code{DATAJUD_API_KEY} environment variable.}
+\item{fonte}{Character. Access mode: \code{"publica"} (default, APIKey) or
+\code{"elastic"} (Basic Auth).}
 
-\item{tribunal}{Character. Tribunal code in uppercase (e.g. \code{"TJAP"}). Converted to lowercase internally.}
+\item{indice}{Character. Only used when \code{fonte = "elastic"}: which index to
+query, \code{"processos"} (default, \verb{view-processos-sigilo-*}) or \code{"datamart"}
+(\verb{datamart-*}).}
 
-\item{base_url}{Character. Base URL of the DataJud API. Defaults to the
-\code{DATAJUD_BASE_URL} environment variable or the public endpoint.}
+\item{tribunal}{Character. Tribunal code (e.g. \code{"TJAP"}). Used to build the
+public API index. Converted to lowercase internally.}
+
+\item{api_key}{Character. APIKey for \code{fonte = "publica"}. Defaults to the
+\code{DATAJUD_API_KEY} environment variable or the CNJ public key.}
+
+\item{usuario}{Character. Basic Auth username for \code{fonte = "elastic"}.
+Defaults to the \code{DATAJUD_USER} environment variable.}
+
+\item{senha}{Character. Basic Auth password for \code{fonte = "elastic"}.
+Defaults to the \code{DATAJUD_PWD} environment variable.}
+
+\item{base_url}{Character or NULL. Override the base URL. For \code{"publica"},
+defaults to the \code{DATAJUD_BASE_URL} environment variable or the public
+endpoint; for \code{"elastic"}, defaults to the Elasticsearch API endpoint.}
+
+\item{index}{Character or NULL. Override the Elasticsearch index/alias
+(e.g. a specific \code{datamart-tjsp}). Defaults to the value implied by
+\code{fonte}/\code{indice}.}
+
+\item{rate_limit}{Numeric. Maximum requests per minute. Default \code{120} (the
+public API limit). Set to \code{Inf} to disable client-side rate limiting.}
 }
 \value{
-A named list with \code{api_key}, \code{tribunal}, and \code{endpoint}.
+A named list describing the connection, with elements \code{fonte},
+\code{indice}, \code{tribunal}, \code{endpoint}, \code{auth}, \code{sort} and \code{rate_limit}.
 }
 \description{
-Builds a configuration list with credentials and endpoint URL used by all
-DataJud API functions.
+Builds a configuration list with credentials, endpoint URL, authentication
+scheme and default sort field used by the DataJud query functions. There are
+two access modes (\code{fonte}):
+}
+\details{
+\itemize{
+\item \code{"publica"} — the public API, open access, non-confidential processes only.
+Authenticated with an APIKey.
+\item \code{"elastic"} — the Elasticsearch API, restricted to tribunals, authenticated
+with a username and password (Basic Auth). Within it you choose the
+\code{indice}:
+\itemize{
+\item \code{"processos"} — raw processes (\verb{view-processos-sigilo-*}), includes
+confidential processes.
+\item \code{"datamart"} — flat aggregated metadata (\verb{datamart-*}), one document
+per process.
+}
+}
+
+The public \emph{Painel de Estatística} download is handled separately by
+\code{\link[=download_bi]{download_bi()}}, which does not require a configuration object or login.
 }

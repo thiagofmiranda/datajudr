@@ -1,0 +1,158 @@
+---
+title: "Dados brutos (API Elastic) e Datamart"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Dados brutos (API Elastic) e Datamart}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  eval     = FALSE
+)
+```
+
+Além da API pública, o `datajudr` acessa a **API Elastic** (`fonte = "elastic"`),
+restrita a tribunais e autenticada por usuário e senha (Basic Auth). Dentro dela
+você escolhe o **índice** com `indice=`:
+
+- `indice = "processos"` — dados brutos de `view-processos-sigilo-*`, incluindo
+  processos sigilosos.
+- `indice = "datamart"` — índice `datamart-*` com metadados agregados e *planos*
+  (um documento por processo), ideal para estatística.
+
+## Credenciais
+
+A API Elastic usa usuário e senha (Basic Auth). Defina-os no `.Renviron`:
+
+```
+DATAJUD_USER='seu_usuario'
+DATAJUD_PWD='sua_senha'
+```
+
+Ou passe diretamente na configuração, escolhendo o índice:
+
+```{r}
+library(datajudr)
+
+# Datamart (metadados agregados)
+cfg_dm <- datajud_config(
+  fonte   = "elastic",
+  indice  = "datamart",
+  usuario = "seu_usuario",
+  senha   = "sua_senha"
+)
+
+# Dados brutos de processos
+cfg_proc <- datajud_config(fonte = "elastic", indice = "processos",
+                           usuario = "u", senha = "s")
+```
+
+Os construtores de query, a paginação `search_after` e o download em Parquet
+funcionam igual à API pública — apenas a fonte/índice muda.
+
+## Datamart: campos disponíveis
+
+Cada documento traz metadados como `id_elastic`, `indice`, `situacao_atual`,
+`fase_atual`, `data_cn`, `data_baixa`, `criminal`, `sigilo` e `nome_sigilo`.
+
+## Processos sigilosos em tramitação
+
+```{r}
+sigilosos <- datamart_sigilosos(
+  cfg_dm,
+  id_situacao_atual = 25,   # em tramitacao
+  sigilo_min        = 1
+)
+```
+
+Equivale à query booleana:
+
+```{r}
+body <- build_query(
+  query_bool(
+    filter = list(
+      query_range("sigilo", gte = 1),
+      query_term("id_situacao_atual", 25)
+    )
+  )
+)
+
+sigilosos <- datajud_search(cfg_dm, body)
+```
+
+## Agregações (contagem por situação)
+
+O Datamart é otimizado para agregações. Para contar processos por situação
+atual sem baixar os documentos:
+
+```{r}
+por_situacao <- datamart_por_situacao(cfg_dm)
+por_situacao
+#> # A tibble: n x 2
+#>   key            doc_count
+#>   <chr>              <int>
+#> ...
+```
+
+Ou monte a agregação manualmente:
+
+```{r}
+body <- build_query(
+  query_range("sigilo", gte = 1),
+  aggs = agg_terms("por_situacao", "situacao_atual", size = 100),
+  size = 0
+)
+
+datajud_aggregate(cfg_dm, body)
+```
+
+## Dados brutos (índice processos)
+
+O índice `processos` (`view-processos-sigilo-*`) traz o documento **bruto** no
+esquema MTD do CNJ (`dadosBasicos.*`, `movimento[]`), diferente do formato limpo
+da API pública. Por isso os atalhos `processos_*` (que usam campos da pública,
+como `numeroProcesso` e `classe.nome`) **não** se aplicam aqui. Use os atalhos
+`processos_brutos_*`, que já conhecem os campos do esquema bruto:
+
+```{r}
+# Por número (campo dadosBasicos.numero)
+proc <- processos_brutos_por_numero(cfg_proc, "00201597020148140401")
+
+# Por código de classe (o índice bruto só tem o código, não o nome)
+classe <- processos_brutos_por_classe(cfg_proc, 279, max_pages = 1)
+
+# Por período de ajuizamento (dadosBasicos.dpj_dataAjuizamento)
+recentes <- processos_brutos_por_data(cfg_proc, "2024-01-01", "2024-03-31")
+
+# Somente processos sigilosos (dadosBasicos.nivelSigilo >= 1)
+sigilosos <- processos_brutos_sigilosos(cfg_proc)
+```
+
+Para filtros que não têm atalho, monte a consulta direto com os construtores
+genéricos usando os nomes de campo `dadosBasicos.*`:
+
+```{r}
+body <- build_query(
+  query_bool(filter = list(
+    query_term("dadosBasicos.classeProcessual", 279),
+    query_term("dadosBasicos.orgaoJulgador.codigoOrgao", 3200)
+  ))
+)
+brutos <- datajud_search(cfg_proc, body, max_pages = 1)
+```
+
+## Download em lote
+
+O download em Parquet funciona para qualquer fonte:
+
+```{r}
+download_processos(
+  cfg_dm,
+  body       = build_query(query_match_all()),
+  output_dir = "dados/datamart"
+)
+```

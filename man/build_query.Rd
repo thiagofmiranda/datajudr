@@ -4,10 +4,16 @@
 \alias{build_query}
 \title{Wrap a query clause in the top-level query envelope}
 \usage{
-build_query(query)
+build_query(query, aggs = NULL, size = NULL)
 }
 \arguments{
 \item{query}{A query clause built with \verb{query_*} functions.}
+
+\item{aggs}{A named list of aggregations built with \verb{agg_*} functions, or
+\code{NULL} (default). Combine several with \code{\link[=c]{c()}}.}
+
+\item{size}{Integer or \code{NULL}. Number of hits to return. Set to \code{0} for
+aggregation-only requests. Default \code{NULL} (leave unset).}
 }
 \value{
 A named list ready to be sent as an API request body.

@@ -1,3 +1,7 @@
 DATAJUD_API_KEY='cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw=='
 DATAJUD_BASE_URL='https://api-publica.datajud.cnj.jus.br'
 DATAJUD_BI_BASE_URL='https://api-csvr.cloud.cnj.jus.br/download_csv'
+# Credenciais Basic Auth para as fontes 'elastic' e 'datamart'
+# (fornecidas pelo tribunal). Descomente e preencha:
+# DATAJUD_USER='seu_usuario'
+# DATAJUD_PWD='sua_senha'

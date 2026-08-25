@@ -1,6 +1,6 @@
-# A ordenacao por @timestamp e exigida pela API do DataJud para uso do
-# search_after. Conforme documentacao oficial, este campo garante paginacao
-# eficiente em grandes volumes sem recarregar resultados a cada pagina.
+# O search_after exige uma ordenacao estavel. A API publica usa `@timestamp`;
+# a API elastic e o Datamart usam `id.keyword` (conforme documentacao oficial),
+# garantindo paginacao eficiente em grandes volumes sem recarregar resultados.
 #' @keywords internal
 datajud_search_after <- function(cfg,
                                  body,
@@ -41,6 +41,10 @@ datajud_search_after <- function(cfg,
       stop("Campo 'sort' nao retornado pela API. Verifique se o body possui clausula 'sort'.")
     }
 
+    # Pagina incompleta => ja e a ultima; evita uma requisicao extra vazia
+    # (com a excecao inevitavel de um total multiplo exato de page_size).
+    if (length(hits) < page_size) break
+
     search_after <- last_hit$sort
     page         <- page + 1
 
@@ -53,8 +57,9 @@ datajud_search_after <- function(cfg,
 }
 
 #' @keywords internal
-default_sort <- function() {
+default_sort <- function(cfg = NULL) {
+  field <- if (!is.null(cfg) && !is.null(cfg$sort)) cfg$sort else "@timestamp"
   list(
-    list(`@timestamp` = list(order = "asc"))
+    stats::setNames(list(list(order = "asc")), field)
   )
 }

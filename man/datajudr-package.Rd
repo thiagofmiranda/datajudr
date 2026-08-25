@@ -7,8 +7,10 @@
 \title{datajudr: R Client for the DataJud API (CNJ)}
 \description{
 Provides functions to query and download judicial process data from the
-DataJud platform (CNJ - Conselho Nacional de Justica) via its public
-Elasticsearch API and BI download endpoints.
+DataJud platform (CNJ - Conselho Nacional de Justica). Supports two query
+access modes — the public API (APIKey) and the Elasticsearch API (Basic Auth,
+with the \verb{view-processos-sigilo-*} and \verb{datamart-*} indexes) — plus the public
+\emph{Painel de Estatistica} download.
 }
 \section{Configuracao}{
 
@@ -36,14 +38,23 @@ Fonte: \url{https://datajud-wiki.cnj.jus.br/api-publica/acesso}
 
 }
 \item{\code{DATAJUD_BASE_URL}}{
-URL base da API de consulta de processos (Elasticsearch).
+URL base da API publica de consulta de processos (Elasticsearch).
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{Valor padrao: `https://api-publica.datajud.cnj.jus.br`
 }\if{html}{\out{</div>}}
 
 }
+\item{\code{DATAJUD_USER} / \code{DATAJUD_PWD}}{
+Usuario e senha (Basic Auth) da API Elastic (\code{fonte = "elastic"}),
+usados para os indices \verb{view-processos-sigilo-*} e \verb{datamart-*}.
+Sao fornecidos pelo tribunal; nao ha valor padrao.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{Fonte: \url{https://datajud-wiki.cnj.jus.br/para-tribunais/Datajud/Api-elastic/}
+}\if{html}{\out{</div>}}
+
+}
 \item{\code{DATAJUD_BI_BASE_URL}}{
-URL base do endpoint de download de dados do BI do CNJ.
+URL base do endpoint de download do Painel de Estatistica do CNJ (publico).
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{Valor padrao: `https://api-csvr.cloud.cnj.jus.br/download_csv`
 }\if{html}{\out{</div>}}
@@ -65,13 +76,15 @@ devtools::install_github("thiagofmiranda/datajudr")
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{library(datajudr)
 
-# Configurar (usa defaults automaticamente)
+# API publica (usa defaults automaticamente)
 cfg <- datajud_config(tribunal = "tjap")
+df  <- processos_por_classe(cfg, "Habeas Corpus", max_pages = 1)
 
-# Buscar processos
-df <- processos_por_classe(cfg, "Habeas Corpus", max_pages = 1)
+# API Elastic + Datamart (Basic Auth via DATAJUD_USER / DATAJUD_PWD)
+cfg_dm <- datajud_config(fonte = "elastic", indice = "datamart", tribunal = "tjap")
+sit    <- datamart_por_situacao(cfg_dm)
 
-# Download BI
+# Painel de Estatistica (publico, sem login)
 dados <- download_bi(tribunal = "TJAP")
 }\if{html}{\out{</div>}}
 }

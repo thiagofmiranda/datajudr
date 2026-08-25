@@ -26,7 +26,7 @@ download_processos <- function(cfg,
   dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
   if (is.null(body$sort)) {
-    body$sort <- default_sort()
+    body$sort <- default_sort(cfg)
   }
 
   if (verbose && estimate) {

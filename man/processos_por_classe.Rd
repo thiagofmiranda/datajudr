@@ -19,3 +19,8 @@ A tibble with matching processes.
 \description{
 Search processes by class name
 }
+\note{
+Usa campos da API publica (\code{classe.nome}, texto). O indice bruto do
+Elastic so tem o codigo da classe (\code{dadosBasicos.classeProcessual}); nesse
+caso use \code{\link[=build_query]{build_query()}} com \code{\link[=query_term]{query_term()}} pelo codigo.
+}

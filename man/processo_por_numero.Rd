@@ -19,3 +19,8 @@ A tibble with matching processes.
 \description{
 Search a process by its number
 }
+\note{
+Usa campos da API publica (\code{numeroProcesso}). Nao se aplica ao indice
+bruto do Elastic (\verb{view-processos-sigilo-*}), que usa \code{dadosBasicos.numero};
+nesse caso use \code{\link[=build_query]{build_query()}} com \code{\link[=query_term]{query_term()}}.
+}

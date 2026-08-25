@@ -8,3 +8,5 @@
 ^teste_download$
 ^doc$
 ^Meta$
+^\.claude$
+^REFERENCIA-FUNCOES\.md$

@@ -23,3 +23,8 @@ A tibble with matching processes.
 \description{
 Search processes with optional class and date filters
 }
+\note{
+Filtros de classe/data usam campos da API publica. No indice bruto do
+Elastic use \code{\link[=build_query]{build_query()}} com os campos \verb{dadosBasicos.*}. (Sem filtros,
+cai em \code{match_all} e funciona em qualquer indice.)
+}
