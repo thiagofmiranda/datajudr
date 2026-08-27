@@ -17,7 +17,11 @@ test_that("fonte elastic defaults to the processos index (basic auth)", {
   expect_equal(cfg$sort, "id.keyword")
   expect_equal(
     cfg$endpoint,
-    "https://api.datajud.cnj.jus.br/view-processos-sigilo-*/_search"
+    paste0(
+      "https://api.datajud.cnj.jus.br/",
+      "view-processos-sigilo-0,view-processos-sigilo-1,view-processos-sigilo-2,",
+      "view-processos-sigilo-3,view-processos-sigilo-4/_search"
+    )
   )
 })
 
@@ -28,7 +32,16 @@ test_that("fonte elastic with indice datamart resolves the datamart index", {
   expect_equal(cfg$sort, "id")
   expect_equal(
     cfg$endpoint,
-    "https://api.datajud.cnj.jus.br/datamart-*/_search"
+    "https://api.datajud.cnj.jus.br/datamart-tjap/_search"
+  )
+})
+
+test_that("datamart index follows the tribunal", {
+  cfg <- datajud_config("elastic", indice = "datamart", tribunal = "TJSP",
+                        usuario = "u", senha = "s")
+  expect_equal(
+    cfg$endpoint,
+    "https://api.datajud.cnj.jus.br/datamart-tjsp/_search"
   )
 })
 

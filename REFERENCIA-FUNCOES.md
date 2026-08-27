@@ -68,8 +68,8 @@ usuário e senha e, dentro dela, você escolhe o **índice** (`indice`):
 | `fonte` | `indice` | Índice real | Autenticação | Acesso | Ordenação (interno) |
 |---|---|---|---|---|---|
 | `"publica"` *(padrão)* | — | `api_publica_<tribunal>` | **APIKey** (chave pública) | Público, só não sigilosos | `@timestamp` |
-| `"elastic"` | `"processos"` *(padrão)* | `view-processos-sigilo-*` | **Basic Auth** (usuário/senha) | Restrito a tribunais, inclui sigilosos | `id.keyword` |
-| `"elastic"` | `"datamart"` | `datamart-*` | **Basic Auth** (usuário/senha) | Restrito a tribunais | `id` |
+| `"elastic"` | `"processos"` *(padrão)* | `view-processos-sigilo-0..4` | **Basic Auth** (usuário/senha) | Restrito a tribunais, inclui sigilosos | `id.keyword` |
+| `"elastic"` | `"datamart"` | `datamart-<tribunal>` | **Basic Auth** (usuário/senha) | Restrito a tribunais | `id` |
 
 > O download do **Painel de Estatística** (`download_bi()`) é **público, sem
 > login** e não usa `datajud_config()` — veja a seção 8.
@@ -81,11 +81,11 @@ usuário e senha e, dentro dela, você escolhe o **índice** (`indice`):
 - `indice` — só vale para `fonte = "elastic"`: `"processos"` (dados brutos) ou
   `"datamart"` (metadados agregados).
 - `tribunal` — código do tribunal (ex.: `"TJSP"`, `"TRF1"`); usado para montar o
-  índice da API pública.
+  índice da API pública e o índice do Datamart (`datamart-<tribunal>`).
 - `usuario` / `senha` — credenciais **Basic Auth** da API Elastic. O ideal é
   defini-las no `.Renviron` (`DATAJUD_USER`, `DATAJUD_PWD`) e não no código.
-- `base_url` / `index` — sobrescritas opcionais (ex.: apontar para
-  `datamart-tjsp` específico em vez do curinga `datamart-*`).
+- `base_url` / `index` — sobrescritas opcionais (ex.: apontar para um
+  `datamart-tjsp` específico ou outro alvo de índice).
 - `rate_limit` — teto de requisições por minuto (padrão 120, o limite da API
   pública). Use `Inf` para desativar.
 

@@ -26,7 +26,8 @@ query, \code{"processos"} (default, \verb{view-processos-sigilo-*}) or \code{"da
 (\verb{datamart-*}).}
 
 \item{tribunal}{Character. Tribunal code (e.g. \code{"TJAP"}). Used to build the
-public API index. Converted to lowercase internally.}
+public API index and the Datamart index (\verb{datamart-<tribunal>}). Converted
+to lowercase internally.}
 
 \item{api_key}{Character. APIKey for \code{fonte = "publica"}. Defaults to the
 \code{DATAJUD_API_KEY} environment variable or the CNJ public key.}
@@ -67,8 +68,8 @@ with a username and password (Basic Auth). Within it you choose the
 \itemize{
 \item \code{"processos"} — raw processes (\verb{view-processos-sigilo-*}), includes
 confidential processes.
-\item \code{"datamart"} — flat aggregated metadata (\verb{datamart-*}), one document
-per process.
+\item \code{"datamart"} — flat aggregated metadata (\verb{datamart-<tribunal>}), one
+document per process.
 }
 }
 

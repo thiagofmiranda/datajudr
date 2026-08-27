@@ -1,7 +1,7 @@
 Package: datajudr
 Type: Package
 Title: R Client for the DataJud API (CNJ)
-Version: 0.2.1
+Version: 0.2.2
 Authors@R: person("Thiago", "Miranda", email = "thiagofm.pa@gmail.com", role = c("aut", "cre"))
 Description: Provides functions to query and download judicial process data
     from the DataJud platform (CNJ - Conselho Nacional de Justica). Supports the

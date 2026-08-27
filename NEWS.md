@@ -1,3 +1,16 @@
+# datajudr 0.2.2
+
+## Correções
+
+* Índices do Elastic ajustados para não esbarrarem no firewall, que bloqueia o
+  curinga `*` no caminho da requisição:
+  * `indice = "processos"` agora consulta os cinco *shards* explícitos
+    `view-processos-sigilo-0,view-processos-sigilo-1,view-processos-sigilo-2,view-processos-sigilo-3,view-processos-sigilo-4`
+    em vez de `view-processos-sigilo-*`;
+  * `indice = "datamart"` agora consulta o índice específico do tribunal
+    (`datamart-<tribunal>`, ex.: `datamart-tjap`) em vez de `datamart-*`. Use o
+    parâmetro `tribunal` para escolher o tribunal (ou `index` para sobrescrever).
+
 # datajudr 0.2.1
 
 ## Correções

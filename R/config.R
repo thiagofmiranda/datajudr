@@ -11,8 +11,8 @@
 #'   `indice`:
 #'     - `"processos"` — raw processes (`view-processos-sigilo-*`), includes
 #'       confidential processes.
-#'     - `"datamart"` — flat aggregated metadata (`datamart-*`), one document
-#'       per process.
+#'     - `"datamart"` — flat aggregated metadata (`datamart-<tribunal>`), one
+#'       document per process.
 #'
 #' The public *Painel de Estatística* download is handled separately by
 #' [download_bi()], which does not require a configuration object or login.
@@ -23,7 +23,8 @@
 #'   query, `"processos"` (default, `view-processos-sigilo-*`) or `"datamart"`
 #'   (`datamart-*`).
 #' @param tribunal Character. Tribunal code (e.g. `"TJAP"`). Used to build the
-#'   public API index. Converted to lowercase internally.
+#'   public API index and the Datamart index (`datamart-<tribunal>`). Converted
+#'   to lowercase internally.
 #' @param api_key Character. APIKey for `fonte = "publica"`. Defaults to the
 #'   `DATAJUD_API_KEY` environment variable or the CNJ public key.
 #' @param usuario Character. Basic Auth username for `fonte = "elastic"`.
@@ -80,9 +81,19 @@ datajud_config <- function(fonte      = c("publica", "elastic"),
     # Cada indice tem um campo de ordenacao estavel para o search_after:
     # em view-processos-sigilo-* o `id` e string (usa `id.keyword`); no
     # datamart-* o `id` e do tipo `long` (usa `id`).
+    #
+    # O curinga `*` e bloqueado pelo firewall, entao usamos alvos explicitos:
+    # os cinco shards `view-processos-sigilo-0..4` separados por virgula, e o
+    # `datamart-<tribunal>` especifico em vez de `datamart-*`.
     spec <- switch(indice,
-      processos = list(index = "view-processos-sigilo-*", sort = "id.keyword"),
-      datamart  = list(index = "datamart-*",              sort = "id")
+      processos = list(
+        index = paste0("view-processos-sigilo-", 0:4, collapse = ","),
+        sort  = "id.keyword"
+      ),
+      datamart  = list(
+        index = paste0("datamart-", tribunal),
+        sort  = "id"
+      )
     )
 
     if (is.null(base_url)) base_url <- "https://api.datajud.cnj.jus.br"
