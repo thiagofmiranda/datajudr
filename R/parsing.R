@@ -41,7 +41,9 @@ extract_hits <- function(results) {
 source_to_row <- function(source) {
 
   source <- lapply(source, function(x) {
-    if (length(x) == 1) x else list(x)
+    if (length(x) == 0) NA        # campo null/ausente da API -> NA (nao list column)
+    else if (length(x) == 1) x
+    else list(x)
   })
 
   tibble::as_tibble(source)

@@ -1,3 +1,15 @@
+# datajudr 0.2.1
+
+## Correções
+
+* Campos que vêm `null` da API não quebram mais a montagem do tibble. Antes, um
+  campo nulo virava uma *list column* contendo `NULL`, o que causava dois erros:
+  `Can't combine <list> and <integer>` no `bind_rows` (quando o campo vinha
+  preenchido em algumas linhas e nulo em outras) e, ao exibir o resultado no
+  Jupyter/IRkernel, `'names' attribute [1] must be the same length as the vector
+  [0]` (na renderização pelo pacote `repr`). Agora o campo nulo vira `NA`
+  (`processos_brutos()` e demais funções de busca).
+
 # datajudr 0.2.0
 
 ## Novas fontes de dados
